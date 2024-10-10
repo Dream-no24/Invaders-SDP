@@ -31,6 +31,8 @@ public class EnemyShip extends Entity {
 	private Cooldown animationCooldown;
 	/** Checks if the ship has been hit by a bullet. */
 	private boolean isDestroyed;
+	/** Checks if the ship is bombed */
+	private boolean isChainExploded;
 	/** Values of the ship, in points, when destroyed. */
 	private int pointValue;
 
@@ -196,17 +198,40 @@ public class EnemyShip extends Entity {
 	 */
 	public final int getHp() {
 		return this.hp;
-	}// Edited by Enemy
+	}// Added by team Enemy
 
 	/**
 	 * Setter for the Hp of the Enemy ship.
 	 *
 	 * @param hp
-	 * 			New hp of the Enemey ship.
+	 * 			New hp of the Enemy ship.
 	 */
 	public void setHp(int hp) {
 		this.hp = hp;
-	}// Edited by Enemy
+	}// Added by team Enemy
 
+	/**
+	 * Destroys ship, causing a chain explode.
+	 */
+	public final void chainExplode() { // Added by team Enemy
+		destroy();
+		setChainExploded(true);
+		setHp(0);
+	}
 
+	/**
+	 * Checks if the ship has been chain exploded.
+	 *
+	 * @return True if the ship has been chain exploded.
+	 */
+	public final boolean isChainExploded() {
+		return this.isChainExploded;
+	} // Added by team Enemy
+
+	/**
+	 * Setter for enemy ship's isChainExploded to false.
+	 */
+	public final void setChainExploded(boolean isChainExploded) {
+		this.isChainExploded = isChainExploded;
+	} // Added by team Enemy
 }

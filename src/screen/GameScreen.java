@@ -190,6 +190,7 @@ public class GameScreen extends Screen {
 		if (this.inputDelay.checkFinished() && !this.levelFinished) {
 
 			if (!this.ship.isDestroyed()) {
+
 				boolean moveRight = inputManager.isKeyDown(KeyEvent.VK_RIGHT)
 						|| inputManager.isKeyDown(KeyEvent.VK_D);
 				boolean moveLeft = inputManager.isKeyDown(KeyEvent.VK_LEFT)
@@ -403,13 +404,14 @@ public class GameScreen extends Screen {
 					}
 				}
 			} else {
-				for (EnemyShip enemyShip : this.enemyShipFormation)
+				for (EnemyShip enemyShip : this.enemyShipFormation) {
 					if (!enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
 						//Drop item when MAGENTA color enemy destroyed
-						if(enemyShip.getColor() == Color.MAGENTA){
-							this.itemManager.dropItem(enemyShip,1,1);}
-						int CntAndPnt[] = this.enemyShipFormation._destroy(bullet, enemyShip);	// team Inventory
+						if (enemyShip.getColor() == Color.MAGENTA) {
+							this.itemManager.dropItem(enemyShip, 1, 1);
+						}
+						int CntAndPnt[] = this.enemyShipFormation._destroy(bullet, enemyShip, false);    // team Inventory
 						this.shipsDestroyed += CntAndPnt[0];
 						this.score += CntAndPnt[1];
 
@@ -420,9 +422,18 @@ public class GameScreen extends Screen {
 						if (bullet.getPiercingCount() <= 0) {
 							recyclable.add(bullet);
 						}
-
-
 					}
+					// Added by team Enemy.
+					// Enemy killed by Explosive enemy gives points too
+					if (enemyShip.isChainExploded()) {
+						if (enemyShip.getColor() == Color.MAGENTA) {
+							this.itemManager.dropItem(enemyShip, 1, 1);
+						}
+						this.score += enemyShip.getPointValue();
+						this.shipsDestroyed++;
+						enemyShip.setChainExploded(false); // resets enemy's chain explosion state.
+					}
+				}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {

@@ -153,7 +153,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 					spriteType = SpriteType.EnemyShipA1;
 
 				if(shipCount == nShipsHigh*(nShipsWide/2))
-					hp = 2; // Edited by Enemy, It just example to insert EnmyShip that hp is 2.
+					hp = 2; // Edited by Enemy, It just an example to insert EnemyShip that hp is 2.
 
 				column.add(new EnemyShip((SEPARATION_DISTANCE
 						* this.enemyShips.indexOf(column))
@@ -448,32 +448,43 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	/**
 	 * When EnemyShip is hit, its HP decrease by 1, and if the HP reaches 0, the ship is destroyed.
 	 *
+	 * @param bullet
+	 *            Player's bullet
 	 * @param destroyedShip
 	 *            Ship to be hit
+	 * @param isChainExploded
+	 * 			  True if enemy ship is chain exploded
 	 */
-	public final int[] _destroy(final Bullet bullet, final EnemyShip destroyedShip) {// Edited by Enemy team
+	public final int[] _destroy(final Bullet bullet, final EnemyShip destroyedShip, boolean isChainExploded) {// Edited by Enemy team
 		int count = 0;	// number of destroyed enemy
 		int point = 0;  // point of destroyed enemy
+
+		// Checks if this ship is 'chainExploded' due to recursive call
+		if (isChainExploded
+				&& !destroyedShip.spriteType.equals(SpriteType.ExplosiveEnemyShip1)
+				&& !destroyedShip.spriteType.equals(SpriteType.ExplosiveEnemyShip2))
+			destroyedShip.chainExplode();
 
 		if (bullet.getSpriteType() == SpriteType.ItemBomb) { // team Inventory
 			int[] temp = Bomb.destroyByBomb(enemyShips, destroyedShip, this.logger);
 			count = temp[0];
 			point = temp[1];
 		} else {
-			for (List<EnemyShip> column : this.enemyShips) // Add by Enemy team
+			for (List<EnemyShip> column : this.enemyShips) // Add by team Enemy
 				for (int i = 0; i < column.size(); i++) {
 					if (column.get(i).equals(destroyedShip)) {
 						switch (destroyedShip.spriteType){
 							case ExplosiveEnemyShip1:
 							case ExplosiveEnemyShip2:
-								HpEnemyShip.hit(destroyedShip);
+								// HpEnemyShip.hit(destroyedShip);
+								destroyedShip.chainExplode(); // Edited by team Enemy
 								for (List<EnemyShip> enemyShip : this.enemyShips)
 									if (enemyShip.size() > i
 											&& !enemyShip.get(i).isDestroyed())
-										this._destroy(bullet, enemyShip.get(i));
+										this._destroy(bullet, enemyShip.get(i), true);
 								for (int j = 0; j < column.size(); j++)
 									if (!column.get(j).isDestroyed())
-										this._destroy(bullet, column.get(j));
+										this._destroy(bullet, column.get(j), true);
 
 								break;
 							default:
