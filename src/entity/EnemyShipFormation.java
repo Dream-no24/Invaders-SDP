@@ -1,8 +1,12 @@
 package entity;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
+import javax.swing.Timer;
 
 import Enemy.PiercingBullet;
 import Enemy.HpEnemyShip;
@@ -467,31 +471,38 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 							case ExplosiveEnemyShip1:
 							case ExplosiveEnemyShip2:
 								HpEnemyShip.hit(destroyedShip);
-								for (List<EnemyShip> enemyShip : this.enemyShips)
-									if (enemyShip.size() > i
-											&& !enemyShip.get(i).isDestroyed())
-										this._destroy(bullet, enemyShip.get(i));
-								for (int j = 0; j < column.size(); j++)
-									if (!column.get(j).isDestroyed())
-										this._destroy(bullet, column.get(j));
-
+								explosive(this.enemyShips.indexOf(column),i);
+								count += findEnemy(this.enemyShips.indexOf(column),i)+1;
+								this.logger.info(count+"@@@@@@@@@@@@@@@@@@@@@");
+//								int a = 0;
+//								a = findEnemy(this.enemyShips.indexOf(column),i);
+//								this.logger.info(a+"---------------------------");
+//								HpEnemyShip.hit(destroyedShip);
+//								for (List<EnemyShip> enemyShip : this.enemyShips)
+//									if (enemyShip.size() > i
+//											&& !enemyShip.get(i).isDestroyed())
+//										this._destroy(bullet, enemyShip.get(i));
+//								for (int j = 0; j < column.size(); j++)
+//									if (!column.get(j).isDestroyed())
+//										this._destroy(bullet, column.get(j));
 								break;
 							default:
-								if (!destroyedShip.isDestroyed())
 									HpEnemyShip.hit(destroyedShip);
+									if(destroyedShip.isDestroyed())
+										count ++;
 								break;
 						}
-						if (column.get(i).getHp() > 0) {
-							this.logger.info("Enemy ship lost 1 HP in ("
-									+ this.enemyShips.indexOf(column) + "," + i + ")");
-						}
-						else{
-							this.logger.info("Destroyed ship in ("
-									+ this.enemyShips.indexOf(column) + "," + i + ")");
-
-							point = column.get(i).getPointValue();
-							count += 1;
-						}
+//						if (column.get(i).getHp() > 0) {
+//							this.logger.info("Enemy ship lost 1 HP in ("
+//									+ this.enemyShips.indexOf(column) + "," + i + ")");
+//						}
+//						else{
+//							this.logger.info("Destroyed ship in ("
+//									+ this.enemyShips.indexOf(column) + "," + i + ")");
+//
+//							point = column.get(i).getPointValue();
+//							count += 1;
+//						}
 					}
 				}
 		}
@@ -525,8 +536,74 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 			}
 		}
 		this.shipCount -= count;
-
+		this.logger.info(this.shipCount+"-------------");
 		int[] returnValue = {count, point};
 		return returnValue;
+	}
+
+	public final int findEnemy(final int x, final int y) {
+		int count = 0;
+
+		// 1. column check
+		for (int i = 0; i < this.enemyShips.size(); i++) {
+			if (y < this.enemyShips.get(i).size()) {
+				if (!this.enemyShips.get(i).get(y).isDestroyed() && this.enemyShips.get(i).get(y).getHp() == 1) {
+					count++;
+				}
+			}
+		}
+
+		// 2. row check
+		if (x < this.enemyShips.size()) {
+			for (int i = 0; i < this.enemyShips.get(x).size(); i++) {
+				if (!this.enemyShips.get(x).get(i).isDestroyed() && this.enemyShips.get(x).get(i).getHp() == 1) {
+					count++;
+				}
+			}
+		}
+
+		return count;
+	}
+
+	public void explosive(final int x, final int y) {
+		javax.swing.Timer timer = new javax.swing.Timer(200, null);
+		int max = Math.max(this.enemyShips.size(), this.enemyShips.get(x).size());
+		final int[] count = {0};
+
+		ActionListener listener = new ActionListener() {
+			private int i = 1;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (y + i < enemyShips.get(x).size() &&
+						!enemyShips.get(x).get(y + i).isDestroyed()) {
+					HpEnemyShip.hit(enemyShips.get(x).get(y + i)); // down
+				}
+
+				if (y - i >= 0 &&
+						!enemyShips.get(x).get(y - i).isDestroyed()) {
+					HpEnemyShip.hit(enemyShips.get(x).get(y - i)); // up
+				}
+
+				if (x + i < enemyShips.size() && y < enemyShips.get(x + i).size() &&
+						!enemyShips.get(x + i).get(y).isDestroyed()) {
+					HpEnemyShip.hit(enemyShips.get(x + i).get(y)); // right
+				}
+
+				if (x - i >= 0 && y < enemyShips.get(x - i).size() &&
+						!enemyShips.get(x - i).get(y).isDestroyed()) {
+					HpEnemyShip.hit(enemyShips.get(x - i).get(y)); // left
+				}
+
+				i++;
+
+				if (i >= max) {
+					((Timer)e.getSource()).stop();
+				}
+			}
+		};
+
+		timer.addActionListener(listener);
+		timer.start();
 	}
 }
